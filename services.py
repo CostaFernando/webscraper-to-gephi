@@ -60,21 +60,23 @@ def writeCitatedPatentNode(gephiNodesWriter, row, webscraperFileFields):
     ))
 
 def writeCitatorPatentNode(gephiNodesWriter, row, webscraperFileFields):
-    gephiNodesWriter.writerow((
-        '',
-        row[webscraperFileFields['citator_patent_number']],
-        row[webscraperFileFields['citator_link']],
-        row[webscraperFileFields['citator_link-href']],
-        row[webscraperFileFields['citator_date']],
-        '',
-        ''
-    ))
+    if(row[webscraperFileFields['citator_patent_number']]):
+        gephiNodesWriter.writerow((
+            '',
+            row[webscraperFileFields['citator_patent_number']],
+            row[webscraperFileFields['citator_link']],
+            row[webscraperFileFields['citator_link-href']],
+            row[webscraperFileFields['citator_date']],
+            '',
+            ''
+        ))
 
 def writeEdge(gephiEdgesWriter, row, webscraperFileFields, currentCitatedPatentNumber):
-    gephiEdgesWriter.writerow((
-        '',
-        '',
-        'Directed',
-        row[webscraperFileFields['citator_patent_number']],
-        currentCitatedPatentNumber
-    ))
+    if(row[webscraperFileFields['citator_patent_number']]):
+        gephiEdgesWriter.writerow((
+            '',
+            '',
+            'Directed',
+            row[webscraperFileFields['citator_patent_number']],
+            currentCitatedPatentNumber
+        ))
