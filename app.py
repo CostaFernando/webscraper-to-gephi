@@ -16,12 +16,14 @@ webscraperFileFields= {
     'pagination': 12,
     'pagination-href': 13,
     'citator_patent_number': 14,
-    'citator_date': 15
+    'citator_date': 15,
+    'citator_abstract': 16,
+    'citator_assignee': 17
 }
 gephiNodesFileFields= ['Id', 'Label', 'patent_title', 'link', 'data', 'assignee', 'abstract']
 gephiEdgesFileFields= ['Source', 'Target', 'Type', 'patent_number_of_citator', 'patent_number_of_cited', 'data']
 
-webscraperFile= open('uspto_patent_citations.csv', 'r')
+webscraperFile= open('uspto-patents-citations.csv', 'r')
 
 print('Iniciando a criação dos arquivos para o Gephi...')
 

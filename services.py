@@ -8,6 +8,7 @@ def convertWebscraperToGephi(webscraperFile, webscraperFileFields, gephiNodesFil
 
         writeGephiFilesHeaders(gephiNodesWriter, gephiEdgesWriter, gephiNodesFileFields, gephiEdgesFileFields)
 
+        jumpFirstLineOfFile(webscraperFile);
         currentCitatedPatentNumber= None;
         for row in webScraperReader:
             if(hasCitatedPatentChanged(row, webscraperFileFields, currentCitatedPatentNumber)):
@@ -42,6 +43,9 @@ def writeGephiFilesHeaders(gephiNodesWriter, gephiEdgesWriter, gephiNodesFileFie
     gephiNodesWriter.writerow(gephiNodesFileFields)
     gephiEdgesWriter.writerow(gephiEdgesFileFields)
 
+def jumpFirstLineOfFile(file):
+    file.readline();
+
 def hasCitatedPatentChanged(row, webscraperFileFields, currentCitatedPatentNumber):
     if(row[webscraperFileFields['patent_number']] != currentCitatedPatentNumber):
         return True
@@ -67,8 +71,8 @@ def writeCitatorPatentNode(gephiNodesWriter, row, webscraperFileFields):
             row[webscraperFileFields['citator_link']],
             row[webscraperFileFields['citator_link-href']],
             row[webscraperFileFields['citator_date']],
-            '',
-            ''
+            row[webscraperFileFields['citator_assignee']],
+            row[webscraperFileFields['citator_abstract']]
         ))
 
 def writeEdge(gephiEdgesWriter, row, webscraperFileFields, currentCitatedPatentNumber):
