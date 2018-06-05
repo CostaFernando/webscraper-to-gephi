@@ -8,16 +8,25 @@ def convertWebscraperToGephi(webscraperFile, webscraperFileFields, gephiNodesFil
 
         writeGephiFilesHeaders(gephiNodesWriter, gephiEdgesWriter, gephiNodesFileFields, gephiEdgesFileFields)
 
-        jumpFirstLineOfFile(webscraperFile);
-        currentCitatedPatentNumber= None;
+        jumpFirstLineOfFile(webscraperFile)
+        currentCitatedPatentNumber= None
+        seen = {}
+        nodeId, citatedId, citatorId = 0, 0, 0
         for row in webScraperReader:
-            if(hasCitatedPatentChanged(row, webscraperFileFields, currentCitatedPatentNumber)):
-                writeCitatedPatentNode(gephiNodesWriter, row, webscraperFileFields);
-
-            writeCitatorPatentNode(gephiNodesWriter, row, webscraperFileFields)
+            if row[webscraperFileFields['patent_number']] not in seen:
+                nodeId+= 1;
+                citatedId= nodeId;
+                writeCitatedPatentNode(citatedId, gephiNodesWriter, row, webscraperFileFields)
+                seen[row[webscraperFileFields['patent_number']]] = citatedId;
+            if row[webscraperFileFields['citator_patent_number']] not in seen:
+                nodeId+= 1;
+                citatorId= nodeId;
+                writeCitatorPatentNode(citatorId, gephiNodesWriter, row, webscraperFileFields)
+                seen[row[webscraperFileFields['citator_patent_number']]] = citatorId;
             currentCitatedPatentNumber= row[webscraperFileFields['patent_number']]
-            writeEdge(gephiEdgesWriter, row, webscraperFileFields, currentCitatedPatentNumber)
 
+            writeEdge(seen[row[webscraperFileFields['patent_number']]], seen[row[webscraperFileFields['citator_patent_number']]],
+                gephiEdgesWriter, row, webscraperFileFields, currentCitatedPatentNumber)
     finally:
         closeAllFiles(webscraperFile, gephiNodesFile, gephiEdgesFile)
 
@@ -52,35 +61,41 @@ def hasCitatedPatentChanged(row, webscraperFileFields, currentCitatedPatentNumbe
 
     return False
 
-def writeCitatedPatentNode(gephiNodesWriter, row, webscraperFileFields):
+def writeCitatedPatentNode(citatedId, gephiNodesWriter, row, webscraperFileFields):
     gephiNodesWriter.writerow((
-        '',
+        citatedId,
         row[webscraperFileFields['patent_number']],
         row[webscraperFileFields['patent_link']],
         row[webscraperFileFields['patent_link-href']],
-        row[webscraperFileFields['patent_date']],
+        parsePatentDate(row[webscraperFileFields['patent_date']]),
         row[webscraperFileFields['patent_assignee']],
         row[webscraperFileFields['patent_abstract']]
     ))
 
-def writeCitatorPatentNode(gephiNodesWriter, row, webscraperFileFields):
+def writeCitatorPatentNode(citatorId, gephiNodesWriter, row, webscraperFileFields):
     if(row[webscraperFileFields['citator_patent_number']]):
         gephiNodesWriter.writerow((
-            '',
+            citatorId,
             row[webscraperFileFields['citator_patent_number']],
             row[webscraperFileFields['citator_link']],
             row[webscraperFileFields['citator_link-href']],
-            row[webscraperFileFields['citator_date']],
+            parsePatentDate(row[webscraperFileFields['citator_date']]),
             row[webscraperFileFields['citator_assignee']],
             row[webscraperFileFields['citator_abstract']]
         ))
 
-def writeEdge(gephiEdgesWriter, row, webscraperFileFields, currentCitatedPatentNumber):
+def writeEdge(citatedId, citatorId, gephiEdgesWriter, row, webscraperFileFields, currentCitatedPatentNumber):
     if(row[webscraperFileFields['citator_patent_number']]):
         gephiEdgesWriter.writerow((
-            '',
-            '',
+            citatorId,
+            citatedId,
             'Directed',
             row[webscraperFileFields['citator_patent_number']],
-            currentCitatedPatentNumber
+            currentCitatedPatentNumber,
+            parsePatentDate(row[webscraperFileFields['citator_date']])
         ))
+
+def parsePatentDate(patentDateText):
+    splited= patentDateText.split(', ')
+
+    return splited[1];
